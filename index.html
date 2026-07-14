@@ -736,17 +736,11 @@ function svgBody(p=[],s=[]){
 
 let routines=load('routines',DEFAULT_ROUTINES);
 let sessions=load('sessions',[]);
-let bwLog=load('bw',[]);
+let bwLog=load('bw',[{d:'2026-06-28',w:104.4}]);
 let active=load('active',null);
 let settings=load('settings',{goal:95,notifs:false,profile:{name:'',age:'',height:'',sex:''}});
 if(!settings.profile)settings.profile={name:'',age:'',height:'',sex:''};
 if(!settings.reminder)settings.reminder={enabled:settings.notifs||false,hour:8,minute:0,onlyTraining:true,days:[1,2,3,4,5]};
-// fecha de inicio del programa: la más antigua entre datos existentes, o hoy (reinicia con "borrar todo")
-if(!settings.startDate){
-  const dates=[...sessions.map(s=>s.date),...bwLog.map(b=>b.d)].filter(Boolean).sort();
-  settings.startDate=dates[0]||today();
-  save('settings',settings);
-}
 const FEELINGS=['💪 Con energía','😐 Normal','😮‍💨 Cansado','😴 Mala noche','🤕 Molestia/dolor','🔥 PR / récord'];
 
 const DAYS=['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado'];
@@ -1617,8 +1611,7 @@ function handlePhoto(ev){
   ev.target.value='';
 }
 function programWeek(){
-  const sd=(settings&&settings.startDate)?settings.startDate:today();
-  const start=new Date(sd+'T12:00');
+  const start=bwLog.length?new Date(bwLog[0].d+'T12:00'):new Date();
   const days=Math.floor((new Date()-start)/864e5);
   return Math.max(1,Math.floor(days/7)+1);
 }
@@ -1763,7 +1756,7 @@ function applyImport(txt){
 function resetAll(){
   uiConfirm('⚠️ Borrar TODO','Esto elimina sesiones, pesos, rutinas y logros. No hay vuelta atrás.',()=>{
     localStorage.removeItem(K+'routines');localStorage.removeItem(K+'sessions');
-    localStorage.removeItem(K+'bw');localStorage.removeItem(K+'active');localStorage.removeItem(K+'settings');localStorage.removeItem(K+'lastPing');
+    localStorage.removeItem(K+'bw');localStorage.removeItem(K+'active');localStorage.removeItem(K+'settings');
     location.reload();
   },'Borrar todo');
 }
